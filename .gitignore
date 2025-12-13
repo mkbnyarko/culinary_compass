@@ -40,4 +40,8 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Streamlit
+.streamlit/
+*.streamlit/
+
 
