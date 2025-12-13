@@ -1,0 +1,197 @@
+[
+    {
+        "name": "Mock Pizza",
+        "ingredients": [
+            "flour",
+            "water",
+            "tomato",
+            "cheese"
+        ],
+        "directions": [
+            "Mix flour and water to make dough.",
+            "Spread tomato sauce on dough.",
+            "Sprinkle cheese on top.",
+            "Bake at 200 degrees for 15 minutes."
+        ],
+        "url": "http://fake.com/pizza"
+    },
+    {
+        "name": "Mock Salad",
+        "ingredients": [
+            "lettuce",
+            "tomato",
+            "cucumber"
+        ],
+        "directions": [
+            "Chop all vegetables.",
+            "Toss in a bowl.",
+            "Serve cold."
+        ],
+        "url": "http://fake.com/salad"
+    },
+    {
+        "name": "Pasta Carbonara",
+        "ingredients": [
+            "pasta",
+            "eggs",
+            "bacon",
+            "parmesan cheese",
+            "black pepper"
+        ],
+        "directions": [
+            "Boil pasta.",
+            "Fry bacon.",
+            "Mix eggs and cheese.",
+            "Combine everything with hot pasta."
+        ],
+        "url": "http://fake.com/carbonara"
+    },
+    {
+        "name": "Chicken Stir Fry",
+        "ingredients": [
+            "chicken breast",
+            "soy sauce",
+            "vegetables",
+            "ginger",
+            "garlic"
+        ],
+        "directions": [
+            "Cut chicken and veggies.",
+            "Stir fry chicken.",
+            "Add veggies and sauce.",
+            "Serve with rice."
+        ],
+        "url": "http://fake.com/stirfry"
+    },
+    {
+        "name": "Tomato Soup",
+        "ingredients": [
+            "tomatoes",
+            "onion",
+            "garlic",
+            "vegetable broth",
+            "cream"
+        ],
+        "directions": [
+            "Sauté onions and garlic.",
+            "Add tomatoes and broth.",
+            "Simmer.",
+            "Blend and add cream."
+        ],
+        "url": "http://fake.com/tomatosoup"
+    },
+    {
+        "name": "Grilled Cheese",
+        "ingredients": [
+            "bread",
+            "cheese",
+            "butter"
+        ],
+        "directions": [
+            "Butter bread.",
+            "Place cheese between slices.",
+            "Grill in pan until melted."
+        ],
+        "url": "http://fake.com/grilledcheese"
+    },
+    {
+        "name": "Fruit Smoothie",
+        "ingredients": [
+            "banana",
+            "berries",
+            "milk",
+            "yogurt",
+            "honey"
+        ],
+        "directions": [
+            "Put all ingredients in blender.",
+            "Blend until smooth.",
+            "Serve immediately."
+        ],
+        "url": "http://fake.com/smoothie"
+    },
+    {
+        "name": "Pancakes",
+        "ingredients": [
+            "flour",
+            "milk",
+            "egg",
+            "baking powder",
+            "sugar",
+            "butter"
+        ],
+        "directions": [
+            "Mix dry ingredients.",
+            "Mix wet ingredients.",
+            "Combine.",
+            "Cook on griddle."
+        ],
+        "url": "http://fake.com/pancakes"
+    },
+    {
+        "name": "Guacamole",
+        "ingredients": [
+            "avocado",
+            "lime",
+            "onion",
+            "cilantro",
+            "salt"
+        ],
+        "directions": [
+            "Mash avocado.",
+            "Mix in chopped onion and cilantro.",
+            "Add lime juice and salt."
+        ],
+        "url": "http://fake.com/guacamole"
+    },
+    {
+        "name": "Roasted Chicken",
+        "ingredients": [
+            "whole chicken",
+            "lemon",
+            "herbs",
+            "butter",
+            "garlic"
+        ],
+        "directions": [
+            "Rub chicken with butter and herbs.",
+            "Stuff with lemon.",
+            "Roast at 375F for 1.5 hours."
+        ],
+        "url": "http://fake.com/roastchicken"
+    },
+    {
+        "name": "Chocolate Cake",
+        "ingredients": [
+            "flour",
+            "sugar",
+            "cocoa powder",
+            "eggs",
+            "milk",
+            "butter"
+        ],
+        "directions": [
+            "Mix dry ingredients.",
+            "Add wet ingredients.",
+            "Bake at 350F for 30 minutes."
+        ],
+        "url": "http://fake.com/chocolatecake"
+    },
+    {
+        "name": "Vegetable Stew",
+        "ingredients": [
+            "potatoes",
+            "carrots",
+            "celery",
+            "onion",
+            "vegetable broth"
+        ],
+        "directions": [
+            "Chop all vegetables.",
+            "Sauté onions.",
+            "Add rest of veggies and broth.",
+            "Simmer until tender."
+        ],
+        "url": "http://fake.com/veggiestew"
+    }
+]
