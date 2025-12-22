@@ -21,22 +21,35 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global storage for recipes
-recipes_db = []
+# Global storage for ML artifacts
+artifacts_db = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global recipes_db
+    """Application lifespan manager - loads ML artifacts on startup."""
+    global artifacts_db
     logger.info("Starting up application...")
     try:
-        recipes_db = load_model_artifacts()
-        logger.info(f"Successfully loaded {len(recipes_db)} recipes.")
+        artifacts_db = load_model_artifacts()
+        num_recipes = len(artifacts_db["recipes"])
+        logger.info(f"✓ Successfully loaded {num_recipes} recipes and all ML models.")
+        logger.info("✓ Backend is ready to serve requests!")
+    except FileNotFoundError as e:
+        logger.error("\n" + "="*60)
+        logger.error("STARTUP WARNING: Model artifacts not found!")
+        logger.error("="*60)
+        logger.error(str(e))
+        logger.error("\nThe backend will start but /recommend endpoint will not work.")
+        logger.error("See DATA_CONTRACT.md for required files.")
+        logger.error("="*60 + "\n")
+        artifacts_db = None
     except Exception as e:
-        logger.error(f"Failed to load model artifacts: {e}")
-        # We might want to raise here to prevent startup, or just log it. 
-        # For now, logging is safer to keep the server alive (but useless).
-        recipes_db = []
+        logger.error(f"\nUnexpected error loading model artifacts: {e}")
+        logger.error("The backend will start but /recommend endpoint will not work.\n")
+        artifacts_db = None
+    
     yield
+    
     logger.info("Shutting down application...")
     
 app = FastAPI(lifespan=lifespan)
@@ -74,7 +87,31 @@ def read_root():
 
 @app.get("/health")
 def read_health():
-    return {"message": "Backend is healthy"}
+    """Basic health check endpoint."""
+    return {"status": "healthy", "message": "Backend is running"}
+
+@app.get("/status")
+def read_status():
+    """
+    Check if ML models are loaded and ready.
+    Returns detailed status information.
+    """
+    if artifacts_db is None:
+        return {
+            "status": "not_ready",
+            "models_loaded": False,
+            "message": "Model artifacts are not loaded. Check server logs for details.",
+            "recommendation": "Ensure preprocessing pipeline has been run. See DATA_CONTRACT.md"
+        }
+    
+    return {
+        "status": "ready",
+        "models_loaded": True,
+        "num_recipes": len(artifacts_db["recipes"]),
+        "tfidf_shape": artifacts_db["tfidf_matrix"].shape,
+        "embeddings_shape": artifacts_db["recipe_embeddings"].shape,
+        "message": "All models loaded successfully. Ready to serve recommendations."
+    }
 
 @app.post("/echo")
 def echo_message(data: TestInput):
@@ -82,5 +119,36 @@ def echo_message(data: TestInput):
 
 @app.post("/recommend", response_model=List[RecipeResponse])
 def recommend_ingredients(data: IngredientQuery):
-    # Pass the loaded recipes to the inference function
-    return find_similar_recipes(data.ingredients, recipes_db)
+    """
+    Get recipe recommendations based on user ingredients.
+    
+    Requires model artifacts to be loaded (check /status endpoint).
+    """
+    # Check if models are loaded
+    if artifacts_db is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Service temporarily unavailable: Model artifacts not loaded. "
+                "Please check server logs and ensure preprocessing has been completed. "
+                "See DATA_CONTRACT.md for details."
+            )
+        )
+    
+    # Validate input
+    if not data.ingredients or len(data.ingredients) == 0:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one ingredient is required"
+        )
+    
+    # Pass the loaded artifacts to the inference function
+    try:
+        results = find_similar_recipes(data.ingredients, artifacts_db)
+        return results
+    except Exception as e:
+        logger.error(f"Error during inference: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"An error occurred during recipe recommendation: {str(e)}"
+        )
