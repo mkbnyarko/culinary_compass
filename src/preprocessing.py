@@ -333,6 +333,8 @@ recipes_df["clean_ingredients_norm"] = (
     .apply(lambda x: light_normalize(x, nlp))
 )
 
+# doc object
+documents = recipes_df['clean_ingredients_norm'].apply("|".join)
 
 # TF-IDF
 vectorizer = TfidfVectorizer(
