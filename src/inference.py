@@ -208,7 +208,6 @@ def find_similar_recipes(user_ingredients, artifacts, top_k=5):
             "name": recipe["name"],
             "ingredients": recipe["ingredients"],
             "directions": recipe.get("directions", []),
-            "url": recipe.get("url"),
             "match_score": float(score) # Convert numpy float to python float
         })
 

@@ -306,9 +306,25 @@ def final_cleaning(ingredients):
 recipes_df["clean_ingredients"] = recipes_df["clean_ingredients"].apply(final_cleaning)
 
 
-# Save clean dataset
-# clean_data = recipes_df[['recipe_title', 'clean_ingredients', 'directions']]
-# clean_data.to_json("../data/cleaned.json")
+# Save clean dataset with proper field naming for inference
+import json
+import os
+
+final_recipes = []
+for _, row in recipes_df.iterrows():
+    final_recipes.append({
+        "name": row["recipe_title"],  # Map recipe_title -> name for inference
+        "ingredients": row["clean_ingredients_norm"],
+        "directions": row["directions"]
+    })
+
+output_path = os.path.join(os.path.dirname(__file__), "..", "data", "processed", "cleaned.json")
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+with open(output_path, "w", encoding="utf-8") as f:
+    json.dump(final_recipes, f, indent=2)
+
+print(f"Exported {len(final_recipes)} recipes to {output_path}")
 
 
 # Singularize nouns

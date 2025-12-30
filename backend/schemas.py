@@ -10,5 +10,4 @@ class RecipeResponse(BaseModel):
     name: str
     ingredients: List[str]
     directions: List[str]
-    url: Optional[str] = None 
     match_score: float
