@@ -8,6 +8,8 @@ import hdbscan
 import pickle
 import re
 import ast
+import json
+import os
 from collections import Counter, defaultdict
 from datasets import load_dataset
 from itertools import combinations
@@ -307,14 +309,11 @@ recipes_df["clean_ingredients"] = recipes_df["clean_ingredients"].apply(final_cl
 
 
 # Save clean dataset with proper field naming for inference
-import json
-import os
-
 final_recipes = []
 for _, row in recipes_df.iterrows():
     final_recipes.append({
         "name": row["recipe_title"],  # Map recipe_title -> name for inference
-        "ingredients": row["clean_ingredients_norm"],
+        "ingredients": row["clean_ingredients"],
         "directions": row["directions"]
     })
 
@@ -328,69 +327,69 @@ print(f"Exported {len(final_recipes)} recipes to {output_path}")
 
 
 # Singularize nouns
-def light_normalize(ingredients, nlp):
-    normalized = []
+# def light_normalize(ingredients, nlp):
+#     normalized = []
 
-    for ing in ingredients:
-        doc = nlp(ing)
-        words = []
-        for t in doc:
-            if t.pos_ == "NOUN":
-                words.append(t.lemma_)
-            else:
-                words.append(t.text)
-        normalized.append(" ".join(words))
+#     for ing in ingredients:
+#         doc = nlp(ing)
+#         words = []
+#         for t in doc:
+#             if t.pos_ == "NOUN":
+#                 words.append(t.lemma_)
+#             else:
+#                 words.append(t.text)
+#         normalized.append(" ".join(words))
 
-    return normalized
-
-
-recipes_df["clean_ingredients_norm"] = (
-    recipes_df["clean_ingredients"]
-    .apply(lambda x: light_normalize(x, nlp))
-)
-
-# doc object
-documents = recipes_df['clean_ingredients_norm'].apply("|".join)
-
-# TF-IDF
-vectorizer = TfidfVectorizer(
-    ngram_range=(1, 1),
-    min_df=3,                # drop very rare noise
-    max_df=0.85,             # suppress salt/oil/water
-    norm="l2",               # cosine similarity friendly
-    use_idf=True,
-    token_pattern=r"[^|]+",
-    smooth_idf=True,
-    sublinear_tf=True        # log(1 + tf)
-)
-
-X = vectorizer.fit_transform(documents)
+#     return normalized
 
 
-# Embeddings
-model = SentenceTransformer("all-MiniLM-L6-v2")
+# recipes_df["clean_ingredients_norm"] = (
+#     recipes_df["clean_ingredients"]
+#     .apply(lambda x: light_normalize(x, nlp))
+# )
 
-ingredient_texts = recipes_df["clean_ingredients_norm"].apply(
-    lambda x: ", ".join(x)
-).tolist()
+# # doc object
+# documents = recipes_df['clean_ingredients_norm'].apply("|".join)
 
-embeddings = model.encode(
-    ingredient_texts,
-    batch_size=64,
-    show_progress_bar=True,
-    normalize_embeddings=True
-)
+# # TF-IDF
+# vectorizer = TfidfVectorizer(
+#     ngram_range=(1, 1),
+#     min_df=3,                # drop very rare noise
+#     max_df=0.85,             # suppress salt/oil/water
+#     norm="l2",               # cosine similarity friendly
+#     use_idf=True,
+#     token_pattern=r"[^|]+",
+#     smooth_idf=True,
+#     sublinear_tf=True        # log(1 + tf)
+# )
+
+# X = vectorizer.fit_transform(documents)
 
 
-# SIMILARITY COMPUTATION
-# X is the TF-IDF sparse matrix
-X_sparse = csr_matrix(X)
+# # Embeddings
+# model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Normalize for cosine similarity (makes it dot product)
-X_norm = normalize(X_sparse, norm='l2', axis=1)
+# ingredient_texts = recipes_df["clean_ingredients_norm"].apply(
+#     lambda x: ", ".join(x)
+# ).tolist()
 
-# TF-IDF similarity matrix
-tfidf_sim = cosine_similarity(X_norm)
+# embeddings = model.encode(
+#     ingredient_texts,
+#     batch_size=64,
+#     show_progress_bar=True,
+#     normalize_embeddings=True
+# )
 
-# Embeddings similarity matrix
-embed_sim = cosine_similarity(embeddings)
+
+# # SIMILARITY COMPUTATION
+# # X is the TF-IDF sparse matrix
+# X_sparse = csr_matrix(X)
+
+# # Normalize for cosine similarity (makes it dot product)
+# X_norm = normalize(X_sparse, norm='l2', axis=1)
+
+# # TF-IDF similarity matrix
+# tfidf_sim = cosine_similarity(X_norm)
+
+# # Embeddings similarity matrix
+# embed_sim = cosine_similarity(embeddings)
