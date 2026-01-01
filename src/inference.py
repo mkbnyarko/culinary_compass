@@ -17,9 +17,9 @@ def load_model_artifacts():
     
     Expected Files (see DATA_CONTRACT.md for details):
     - data/processed/cleaned.json: Recipe database with name, ingredients, directions
-    - data/models/tfidf_vectorizer.pkl: Trained TF-IDF vectorizer
-    - data/models/tfidf_matrix.npz: TF-IDF feature matrix (sparse)
-    - data/models/embeddings.npy: Pre-computed semantic embeddings
+    - models/tfidf_vectorizer.pkl: Trained TF-IDF vectorizer
+    - models/tfidf_matrix.npz: TF-IDF feature matrix (sparse)
+    - models/embeddings.npy: Pre-computed semantic embeddings
     
     Returns:
         dict: Dictionary containing all loaded artifacts with keys:
@@ -34,7 +34,7 @@ def load_model_artifacts():
         ValueError: If loaded data has incorrect format
     """
     base_dir = os.path.dirname(os.path.dirname(__file__))
-    models_dir = os.path.join(base_dir, "data", "models")
+    models_dir = os.path.join(base_dir, "models")
     data_dir = os.path.join(base_dir, "data", "processed")
 
     logger.info("LOG: Loading model artifacts... This may take a moment.")
