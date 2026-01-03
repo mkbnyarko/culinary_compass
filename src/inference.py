@@ -2,6 +2,7 @@ import json
 import os
 import logging
 import pickle
+import joblib
 import numpy as np
 import scipy.sparse
 from sklearn.metrics.pairwise import cosine_similarity
@@ -86,8 +87,7 @@ def load_model_artifacts():
 
         # 2. Load TF-IDF Vectorizer (The Keyword Translator)
         logger.info("Loading TF-IDF vectorizer...")
-        with open(required_files["tfidf_vectorizer.pkl"], "rb") as f:
-            tfidf_vectorizer = pickle.load(f)
+        tfidf_vectorizer = joblib.load(required_files["tfidf_vectorizer.pkl"])
         logger.info("TF-IDF vectorizer loaded")
 
         # 3. Load TF-IDF Matrix (The Keyword Scoreboard)

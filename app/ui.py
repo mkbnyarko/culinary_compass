@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from typing import List
-import json
 
 # Page config
 st.set_page_config(
@@ -311,13 +310,21 @@ def get_recipe_recommendations(ingredients: List[str]) -> dict:
                 "success": False,
                 "error": f"Yikes! Something went wrong on our end (Error {e.response.status_code}). Give it another shot?"
             }
-    except Exception as e:
+    except requests.exceptions.RequestException:
+        # Catch any other request-related exceptions not already handled
+        return {
+            "success": False,
+            "error": "Well, this is awkward... something unexpected happened. Mind trying again?"
+        }
+    except (ValueError, KeyError):
+        # Handle JSON parsing errors or missing keys
         return {
             "success": False,
             "error": "Well, this is awkward... something unexpected happened. Mind trying again?"
         }
 
 def main():
+    """Main application entry point for the Culinary Compass Streamlit UI."""
     # Inject CSS
     inject_css()
     
@@ -336,21 +343,26 @@ def main():
     st.markdown('<span class="floating-label">What ingredients do you have?</span>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Autocomplete selectbox
-    col1, col2 = st.columns([6, 1])
-    
-    with col1:
-        selected_ingredient = st.selectbox(
-            "Start typing to search ingredients...",
-            [""] + sorted(COMMON_INGREDIENTS),
-            key="ingredient_input",
-            label_visibility="collapsed"
-        )
-    
-    with col2:
-        if st.button("Add", key="add_btn", use_container_width=True):
-            if selected_ingredient and selected_ingredient not in st.session_state.ingredients:
-                st.session_state.ingredients.append(selected_ingredient)
+    # Text input for free-form ingredient entry (using form for Enter key support)
+    with st.form("ingredient_form", clear_on_submit=True):
+        col1, col2 = st.columns([6, 1])
+        
+        with col1:
+            user_input = st.text_input(
+                "Type an ingredient...",
+                key="ingredient_input",
+                placeholder="e.g., chicken, tomatoes, pasta...",
+                label_visibility="collapsed"
+            )
+        
+        with col2:
+            submitted = st.form_submit_button("Add", use_container_width=True)
+        
+        # Handle Enter key (form submission) or Add button click
+        if submitted:
+            ingredient_to_add = user_input.strip() if user_input else ""
+            if ingredient_to_add and ingredient_to_add not in st.session_state.ingredients:
+                st.session_state.ingredients.append(ingredient_to_add)
                 st.rerun()
     
     # Display current ingredients with inline remove buttons
@@ -372,9 +384,9 @@ def main():
     st.markdown("<br>", unsafe_allow_html=True)
     
     if st.button("Find My Recipes", use_container_width=True, type="primary"):
-        # Validation
-        if len(st.session_state.ingredients) < 3:
-            show_error("Hold on! We need at least 3 ingredients to work our magic. Add a couple more?")
+        # Validation - require at least 1 ingredient
+        if len(st.session_state.ingredients) < 1:
+            show_error("Please add at least one ingredient to find recipes")
         else:
             with st.spinner("Cooking up some suggestions..."):
                 result = get_recipe_recommendations(st.session_state.ingredients)
