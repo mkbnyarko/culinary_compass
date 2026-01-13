@@ -31,6 +31,12 @@ def normalize_column(col):
     Normalize a column for duplicate detection:
     - Strings → lowercase, stripped
     - Lists/arrays → lowercase, stripped, sorted, converted to tuple
+
+    Args: 
+        col (pd.Series): input column value
+
+    Returns:
+        (pd.Series): normalized column
     """
     if isinstance(col, str):
         return col.strip().lower()
@@ -69,6 +75,17 @@ nlp = spacy.load("en_core_web_md")
 
 # STAGE 1 INGREDIENT CLEANING
 def clean_stage1(raw):
+    """
+    Strip ingredients list of unwanted characters
+    - remove quantities, units, preparation words, etc.
+    - this is a first-pass cleaning; further cleaning will be done later
+
+    Args:
+        raw (str)
+    
+    Returns:
+        (str): cleaned ingredient string
+    """
     raw = raw.lower().strip()
     
     # Replace unicode fractions
@@ -119,6 +136,12 @@ def split_tokens(text):
     """
     Split Stage-1 cleaned text into tokens.
     Uses commas, slashes, ' and ', ' or ' etc.
+    
+    Args:
+        text (str)
+    
+    Returns:
+        List[str]: list of tokens
     """
     # replace and/or with comma (but not inside ingredient names)
     text = re.sub(r"\s+(and|or|\&)\s+", ",", text)
@@ -132,8 +155,13 @@ def split_tokens(text):
 
 def looks_like_garbage(token):
     """
-    Shape-based garbage detection.
-    No vocabulary lists — entirely rule-based.
+    Rule-based garbage detection.
+
+    Args:
+        token (str)
+    
+    Returns:
+        (bool): True if token looks like garbage
     """
     t = token.lower().strip()
 
@@ -160,6 +188,12 @@ def extract_ingredient_phrase(t):
     """
     Extracts the main ingredient phrase using POS-based noun chunking,
     preserving multiword ingredients naturally.
+
+    Args:
+        t (str)
+
+    Returns:
+        (str or List[str]): extracted ingredient phrase(s)
     """
     t = t.strip().lower()
 
@@ -205,6 +239,12 @@ def remove_filler_words(phrase):
     """
     Removes standalone filler words from final ingredient tokens,
     but does NOT destroy valid multiword ingredient names.
+
+    Args:
+        phrase (str)
+
+    Returns:
+        (str): cleaned phrase
     """
     FILLER_STOPWORDS = {
         "and", "to", "or", "for", "with", "in", "of", "the",
@@ -216,6 +256,18 @@ def remove_filler_words(phrase):
 
 
 def clean_stage2(stage1_output):
+    """
+    Further clean Stage-1 output into final ingredient tokens.
+    - split on commas/slashes/and/or
+    - remove punctuation
+    - filter garbage tokens
+
+    Args:
+        stage1_output (str)
+    
+    Returns:
+        List[str]: cleaned ingredient tokens
+    """
     tokens = split_tokens(stage1_output)
 
     cleaned = []
@@ -257,6 +309,15 @@ recipes_df["clean_ingredients_stage2"] = recipes_df["clean_ingredients_stage1"].
 
 # flatten clean_ingredients_stage2 output one level: [[...], [...]] → [...]
 def parse_ingredients(x):
+    """
+    Flatten list of lists of ingredients into single list.
+
+    Args:
+        x (List[List[str]])
+
+    Returns:
+        List[str]
+    """
     if isinstance(x, str):
         x = ast.literal_eval(x)
     return [item for sublist in x for item in sublist]
@@ -270,8 +331,13 @@ recipes_df["clean_ingredients"] = (
 # FINAL STAGE OF INGREDIENT CLEANING
 def final_cleaning(ingredients):
     """
-    ingredients: List[str]
-    returns: List[str]
+    Final cleaning pass to remove any remaining unwanted words.
+
+    Args:
+        ingredients (List[str])
+
+    Returns:
+        List[str]
     """
     if not ingredients:
         return []
@@ -326,6 +392,16 @@ recipes_df["clean_ingredients"] = recipes_df["clean_ingredients"].apply(final_cl
 
 # Singularize nouns
 def light_normalize(ingredients, nlp):
+    """
+    Singularize nouns using lemmatization.
+
+    Args:
+        ingredients (List[str])
+        nlp: spaCy language model
+
+    Returns:
+        List[str]: normalized ingredients
+    """
     normalized = []
 
     for ing in ingredients:
