@@ -1,9 +1,9 @@
-# Culinary Compass - Let's get cooking
+# 🍴 Culinary Compass - Let's get cooking
 
 Culinary Compass is an intelligent recipe recommendation system that suggests the best meals you can make from the ingredients you already have.  
 It uses a **hybrid similarity** approach combining keyword-based matching (TF-IDF) and semantic similarity (Sentence Transformers), built on top of a robust **multi-stage ingredient preprocessing pipeline**.
 
-### Features
+### 📌 Features
 - Multi-stage ingredient preprocessing pipeline
     - Dataset deduplication
     - Rule-based + NLP-based ingredient cleaning
@@ -22,7 +22,7 @@ It uses a **hybrid similarity** approach combining keyword-based matching (TF-ID
 - Ingredient overlap and missing-ingredient scoring
 - Scoring penalties for recipes requiring many extra ingredients
 
-🎯 Why This Project?
+### 🎯 Why This Project?
 This project demonstrates:
 - Real-world ingredient normalization challenges
 - Rule-based + NLP hybrid preprocessing
