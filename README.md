@@ -30,4 +30,6 @@ This project demonstrates:
 - Artifact-driven ML engineering patterns
 - Clean API-first design
 
-The emphasis is on robust data handling and system design, not just model training.
+The emphasis is on robust data handling and system design, not just model training.  
+
+*Dataset Source: [kaggle](kaggle.com)*
