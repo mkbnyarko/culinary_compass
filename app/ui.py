@@ -1,11 +1,19 @@
+import os
+import sys
+from typing import Any, Dict, List
+
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 import streamlit as st
-import requests
-from typing import List
+
+from src.inference import find_similar_recipes, load_model_artifacts
 
 # Page config
 st.set_page_config(
     page_title="Culinary Compass",
-    page_icon="�",
+    page_icon="🍳",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
@@ -264,8 +272,16 @@ COMMON_INGREDIENTS = [
     "basil", "cilantro", "parsley", "oregano", "thyme"
 ]
 
-# Backend configuration
-BACKEND_URL = "http://127.0.0.1:8000"
+@st.cache_resource
+def _load_recipe_artifacts() -> Dict[str, Any]:
+    """Load ML artifacts once per Streamlit worker (no separate API server)."""
+    try:
+        return {"artifacts": load_model_artifacts(), "error": None}
+    except FileNotFoundError as e:
+        return {"artifacts": None, "error": str(e)}
+    except Exception as e:
+        return {"artifacts": None, "error": str(e)}
+
 
 def inject_css():
     """Inject custom CSS"""
@@ -280,53 +296,41 @@ def show_success(message: str):
     st.markdown(f'<div class="success-message"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">check_circle</span>{message}</div>', unsafe_allow_html=True)
 
 def get_recipe_recommendations(ingredients: List[str]) -> dict:
-    """Call backend API to get recipe recommendations"""
+    """Run recommendation in-process (same Python app as Streamlit)."""
+    bundle = _load_recipe_artifacts()
+    if bundle["artifacts"] is None:
+        return {
+            "success": False,
+            "error": (
+                "Recipe data isn't available on this deployment yet (model files missing). "
+                "If you're the maintainer, add the artifacts from DATA_CONTRACT.md."
+            ),
+        }
+    if not ingredients:
+        return {
+            "success": False,
+            "error": "Hmm, something's not quite right with those ingredients. Try again?",
+        }
     try:
-        response = requests.post(
-            f"{BACKEND_URL}/recommend",
-            json={"ingredients": ingredients},
-            timeout=10
-        )
-        response.raise_for_status()
-        return {"success": True, "data": response.json()}
-    except requests.exceptions.ConnectionError:
+        data = find_similar_recipes(ingredients, bundle["artifacts"])
+        return {"success": True, "data": data}
+    except Exception:
         return {
             "success": False,
-            "error": "Oops! We can't reach the recipe brain right now. Try again in a sec?"
-        }
-    except requests.exceptions.Timeout:
-        return {
-            "success": False,
-            "error": "Hold up! The recipe search is taking too long. Try again in a sec?"
-        }
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 422:
-            return {
-                "success": False,
-                "error": "Hmm, something's not quite right with those ingredients. Try again?"
-            }
-        else:
-            return {
-                "success": False,
-                "error": f"Yikes! Something went wrong on our end (Error {e.response.status_code}). Give it another shot?"
-            }
-    except requests.exceptions.RequestException:
-        # Catch any other request-related exceptions not already handled
-        return {
-            "success": False,
-            "error": "Well, this is awkward... something unexpected happened. Mind trying again?"
-        }
-    except (ValueError, KeyError):
-        # Handle JSON parsing errors or missing keys
-        return {
-            "success": False,
-            "error": "Well, this is awkward... something unexpected happened. Mind trying again?"
+            "error": "Well, this is awkward... something unexpected happened. Mind trying again?",
         }
 
 def main():
     """Main application entry point for the Culinary Compass Streamlit UI."""
     # Inject CSS
     inject_css()
+
+    bundle = _load_recipe_artifacts()
+    if bundle["artifacts"] is None:
+        show_error(
+            "Recommendations are offline: required model files are not present in this environment. "
+            "See DATA_CONTRACT.md for how to generate and include them."
+        )
     
     # Initialize session state
     if 'ingredients' not in st.session_state:
