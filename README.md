@@ -3,6 +3,8 @@
 Culinary Compass is an intelligent recipe recommendation system that suggests the best meals you can make from the ingredients you already have.  
 It uses a **hybrid similarity** approach combining keyword-based matching (TF-IDF) and semantic similarity (Sentence Transformers), built on top of a robust **multi-stage ingredient preprocessing pipeline**.
 
+[Try the app here👍](https://culinarycompass-gyammike.streamlit.app/)
+
 ### 📌 Features
 - Multi-stage ingredient preprocessing pipeline
     - Dataset deduplication
